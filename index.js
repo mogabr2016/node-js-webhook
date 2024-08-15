@@ -1,7 +1,12 @@
 const express = require('express');
 const body_parser = require('body-parser');
 const axios = require('axios');
+const { createServer } = require('node:http');
+const { join } = require('node:path');
+const { Server } = require('socket.io');
 require('dotenv').config();
+const server = createServer(app);
+const io = new Server(server);
 
 
 const app = express().use(body_parser.json());
@@ -70,3 +75,11 @@ app.post("/webhook",(req,res)=>{
         }
     }
 });
+io.on('connection', (socket) => {
+    console.log('a user connected');
+  });
+  server.listen(process.env.PORT, () => {
+    console.log('server running at' + process.env.PORT);
+  });
+  
+    
