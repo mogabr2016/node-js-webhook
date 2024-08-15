@@ -51,6 +51,12 @@ app.post("/webhook",(req,res)=>{
                   console.log("phone number" + phone_number_id);
                   console.log("from:" + from);
                   console.log("body param" + msg_body);
+io.on('connection', (socket) => {
+  socket.on('hello', (arg) => {
+    console.log(arg); // 'world'
+  });
+});
+
 
 
 
