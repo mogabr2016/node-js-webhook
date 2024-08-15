@@ -1,15 +1,19 @@
 const express = require('express');
 const body_parser = require('body-parser');
 const axios = require('axios');
-const { createServer } = require('node:http');
-const { join } = require('node:path');
-const { Server } = require('socket.io');
-require('dotenv').config();
-
-
+//const { createServer } = require('node:http');
+const http = require('http');
 const app = express().use(body_parser.json());
-const server = createServer(app);
-const io = new Server(server);
+
+const { join } = require('node:path');
+const socketIo = require('socket.io');
+require('dotenv').config();
+const server = http.createServer(app);
+const io = socketIo(server);
+
+
+// Example in-memory store for received messages
+let receivedMessages = [];
 
 app.listen(process.env.PORT, ()=>{
 console.log('webhook is listening');
@@ -51,14 +55,19 @@ app.post("/webhook",(req,res)=>{
                   console.log("phone number" + phone_number_id);
                   console.log("from:" + from);
                   console.log("body param" + msg_body);
-io.on('connection', (socket) => {
-  socket.on('hello', (arg) => {
-    console.log(arg); // 'world'
-  });
+
+body_param.array.forEach((message) => {
+    const msg = {
+        from : message.from,
+        body : message.text.body,
+        timestamp: message.timestamp
+    }
+
+    receivedMessages.push(msg);
+
 });
 
-
-
+console.log(receivedMessages);
 
            axios({
             method: 'post',
@@ -84,7 +93,7 @@ io.on('connection', (socket) => {
 io.on('connection', (socket) => {
     console.log('a user connected');
   });
-  server.listen(3000, () => {
+  server.listen(process.env.PORT, () => {
     console.log('server running at' + process.env.PORT);
   });
   
