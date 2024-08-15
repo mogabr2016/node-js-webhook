@@ -56,7 +56,7 @@ app.post("/webhook",(req,res)=>{
                   console.log("from:" + from);
                   console.log("body param" + msg_body);
 
-body_param.array.forEach((message) => {
+
     const msg = {
         from : from,
         body : msg_body,
@@ -65,7 +65,7 @@ body_param.array.forEach((message) => {
 
     receivedMessages.push(msg);
 
-});
+
 
         // Log the components of receivedMessages
         console.log("Received Messages: ");
