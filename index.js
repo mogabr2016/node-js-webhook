@@ -58,9 +58,9 @@ app.post("/webhook",(req,res)=>{
 
 body_param.array.forEach((message) => {
     const msg = {
-        from : message.from,
-        body : message.text.body,
-        timestamp: message.timestamp
+        from : from,
+        body : msg_body,
+        phone_number_id: phone_number_id
     }
 
     receivedMessages.push(msg);
@@ -73,7 +73,7 @@ body_param.array.forEach((message) => {
             console.log(`Message ${index + 1}:`);
             console.log(`From: ${msg.from}`);
             console.log(`Body: ${msg.body}`);
-            console.log(`Timestamp: ${new Date(msg.timestamp * 1000).toLocaleString()}`);
+            console.log(`Phone Number: ${msg.phone_number_id}`);
             console.log('-------------------------');
         });
 
