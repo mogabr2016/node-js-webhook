@@ -6,7 +6,7 @@ require('dotenv').config();
 
 const app = express().use(body_parser.json());
 
-app.listen(8000 || process.env.PORT, ()=>{
+app.listen(process.env.PORT, ()=>{
 console.log('webhook is listening');
 });
 
