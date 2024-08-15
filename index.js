@@ -50,7 +50,7 @@ app.post("/webhook",(req,res)=>{
 
            let phone_number_id = body_param.entry[0].changes[0].value.metadata.phone_number_id;
            let display_phone_number = body_param.entry[0].changes[0].value.metadata.display_phone_number;
-           let fromname = body_param.entry[0].changes[0].value.contacts[0].profile;
+           let fromname = body_param.entry[0].changes[0].value.contacts[0].profile.name;
            let from = body_param.entry[0].changes[0].value.messages[0].from;
            let msg_body = body_param.entry[0].changes[0].value.messages[0].text.body;
            
