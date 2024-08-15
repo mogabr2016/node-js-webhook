@@ -67,7 +67,7 @@ body_param.array.forEach((message) => {
 
 });
 
-console.log(receivedMessages);
+console.log('the received messages variable : ' +receivedMessages + 'end of received messages');
 
            axios({
             method: 'post',
