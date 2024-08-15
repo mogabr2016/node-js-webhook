@@ -67,7 +67,15 @@ body_param.array.forEach((message) => {
 
 });
 
-console.log('the received messages variable : ' +receivedMessages + 'end of received messages');
+        // Log the components of receivedMessages
+        console.log("Received Messages: ");
+        receivedMessages.forEach((msg, index) => {
+            console.log(`Message ${index + 1}:`);
+            console.log(`From: ${msg.from}`);
+            console.log(`Body: ${msg.body}`);
+            console.log(`Timestamp: ${new Date(msg.timestamp * 1000).toLocaleString()}`);
+            console.log('-------------------------');
+        });
 
            axios({
             method: 'post',
