@@ -5,11 +5,11 @@ const { createServer } = require('node:http');
 const { join } = require('node:path');
 const { Server } = require('socket.io');
 require('dotenv').config();
-const server = createServer(app);
-const io = new Server(server);
 
 
 const app = express().use(body_parser.json());
+const server = createServer(app);
+const io = new Server(server);
 
 app.listen(process.env.PORT, ()=>{
 console.log('webhook is listening');
