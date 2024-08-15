@@ -78,7 +78,7 @@ app.post("/webhook",(req,res)=>{
 io.on('connection', (socket) => {
     console.log('a user connected');
   });
-  server.listen(process.env.PORT, () => {
+  server.listen(3000, () => {
     console.log('server running at' + process.env.PORT);
   });
   
