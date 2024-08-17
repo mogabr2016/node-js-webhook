@@ -9,7 +9,13 @@ const { join } = require('node:path');
 const socketIo = require('socket.io');
 require('dotenv').config();
 const server = http.createServer(app);
-const io = socketIo(server);
+//const io = socketIo(server);
+const io = new socketIo(server, {
+  cors: {
+    origin: '*',
+    methods: ['GET', 'POST']
+  }
+});
 
 
 // Example in-memory store for received messages
