@@ -14,7 +14,12 @@ const io = socketIo(server);
 
 // Example in-memory store for received messages
 let receivedMessages = [];
-
+io.on('connection', (socket) => {
+    console.log('a user connected');
+  });
+  server.listen(3000, () => {
+    console.log('server running at' + process.env.PORT);
+  });
 app.listen(process.env.PORT, ()=>{
 console.log('webhook is listening');
 });
@@ -104,11 +109,6 @@ app.post("/webhook",(req,res)=>{
         }
     }
 });
-io.on('connection', (socket) => {
-    console.log('a user connected');
-  });
-  server.listen(3000, () => {
-    console.log('server running at' + process.env.PORT);
-  });
+
   
     
