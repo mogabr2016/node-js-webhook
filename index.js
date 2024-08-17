@@ -80,6 +80,8 @@ app.post("/webhook",(req,res)=>{
             console.log(`Phone Number: ${msg.phone_number_id}`);
             console.log('-------------------------');
         });
+                // Emit the received messages to connected clients
+                io.emit('newMessage', receivedMessages);
 
            axios({
             method: 'post',
