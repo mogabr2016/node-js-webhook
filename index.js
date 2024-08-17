@@ -4,11 +4,30 @@ const axios = require('axios');
 //const { createServer } = require('node:http');
 const http = require('http');
 const app = express().use(body_parser.json());
+const WebSocket = require('ws');
 
 const { join } = require('node:path');
 const {Server} = require('socket.io');
 require('dotenv').config();
 const server = http.createServer(app);
+const wss = new WebSocket.Server({ server });
+wss.on('connection', (ws) => {
+  console.log('Client connected');
+
+  ws.on('message', (message) => {
+    console.log('Received:', message);
+    ws.send(`Echo: ${message}`);
+  });
+
+  ws.on('close', () => {
+    console.log('Client disconnected');
+  });
+});
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
+
 //const io = socketIo(server);
 const io = new Server(server, {
   cors: {
@@ -20,12 +39,6 @@ const io = new Server(server, {
 
 // Example in-memory store for received messages
 let receivedMessages = [];
-io.on('connection', (socket) => {
-    console.log('a user connected');
-  });
-  server.listen(3000, () => {
-    console.log('server running at' + process.env.PORT);
-  });
 app.listen(process.env.PORT, ()=>{
 console.log('webhook is listening');
 });
@@ -34,7 +47,7 @@ const token = process.env.TOKEN;
 const mytoken = process.env.MYTOKEN;
 
 app.get('/',(req,res)=>{
-    res.send('Server is running');
+    res.send('WebSocket Server is running');
 });
 
 //to verify the callback url from the dashboard - cloud side
