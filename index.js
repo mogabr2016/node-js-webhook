@@ -6,11 +6,11 @@ const http = require('http');
 const app = express().use(body_parser.json());
 
 const { join } = require('node:path');
-const socketIo = require('socket.io');
+const {Server} = require('socket.io');
 require('dotenv').config();
 const server = http.createServer(app);
 //const io = socketIo(server);
-const io = new socketIo(server, {
+const io = Server(server, {
   cors: {
     origin: '*',
     methods: ['GET', 'POST']
