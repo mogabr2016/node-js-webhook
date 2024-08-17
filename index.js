@@ -33,6 +33,10 @@ console.log('webhook is listening');
 const token = process.env.TOKEN;
 const mytoken = process.env.MYTOKEN;
 
+app.get('/',(req,res)=>{
+    res.send('Server is running');
+});
+
 //to verify the callback url from the dashboard - cloud side
 app.get('/webhook',(req,res)=>{
    let mode = req.query['hub.mode'];
