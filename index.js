@@ -1,16 +1,19 @@
-const express = require('express');
-const body_parser = require('body-parser');
-const axios = require('axios');
-//const { createServer } = require('node:http');
-const http = require('http');
-const app = express().use(body_parser.json());
 const WebSocket = require('ws');
+const express = require('express');
+const http = require('http');
+const body_parser = require('body-parser');
+const { createClient } = require('@supabase/supabase-js');
+// Initialize Supabase client
+const supabaseUrl = 'https://ujxkhyygciuafegwzmvr.supabase.co'; // replace with your Supabase URL
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVqeGtoeXlnY2l1YWZlZ3d6bXZyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDg3NTUzNDIsImV4cCI6MjAyNDMzMTM0Mn0.jr_BGXpuKY7rsTQXI2KQ3rDdA0aeFbusqvX6pdw2ot4'; // replace with your Supabase anon key
+const supabase = createClient(supabaseUrl, supabaseKey);
 
-const { join } = require('node:path');
-const {Server} = require('socket.io');
-require('dotenv').config();
+
+const app = express().use(body_parser.json());
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
+const axios = require('axios');
+
 wss.on('connection', (ws) => {
   console.log('Client connected');
 
@@ -23,23 +26,18 @@ wss.on('connection', (ws) => {
     console.log('Client disconnected');
   });
 });
-const PORT = process.env.PORT || 3000;
+
+//const PORT = process.env.PORT || 3000;
 server.listen(3000, () => {
-  console.log(`Server is running on port 3000`);
+  console.log(`Server is running on port ${3000}`);
 });
 
-//const io = socketIo(server);
-const io = new Server(server, {
-  cors: {
-    origin: '*',
-    methods: ['GET', 'POST']
-  }
+app.get('/', (req, res) => {
+  res.send('WebSocket server is running!');
 });
 
-
-// Example in-memory store for received messages
 let receivedMessages = [];
-app.listen(process.env.PORT, ()=>{
+app.listen(8080, ()=>{
 console.log('webhook is listening');
 });
 
@@ -65,8 +63,7 @@ app.get('/webhook',(req,res)=>{
     }
    }
 });
-
-app.post("/webhook",(req,res)=>{
+app.post("/webhook", async (req,res)=>{
     let body_param = req.body;
     console.log(JSON.stringify(body_param,null,2));
 
@@ -78,6 +75,9 @@ app.post("/webhook",(req,res)=>{
 
            let phone_number_id = body_param.entry[0].changes[0].value.metadata.phone_number_id;
            let display_phone_number = body_param.entry[0].changes[0].value.metadata.display_phone_number;
+           let message_id = body_param.entry[0].changes[0].value.messages[0].id;
+           let numeric_timestamp = body_param.entry[0].changes[0].value.messages[0].timestamp;
+           let timestamp = new Date(parseInt(numeric_timestamp) * 1000);
            let fromname = body_param.entry[0].changes[0].value.contacts[0].profile.name;
            let from = body_param.entry[0].changes[0].value.messages[0].from;
            let msg_body = body_param.entry[0].changes[0].value.messages[0].text.body;
@@ -94,10 +94,28 @@ app.post("/webhook",(req,res)=>{
         body : msg_body,
         phone_number_id: phone_number_id
     }
-
+const supabaseMessage = {
+  from: from,
+  to: display_phone_number,
+  text: msg_body,
+  message_id: message_id,
+  wa_timestamp: timestamp
+}
     receivedMessages.push(msg);
 
+try {
+    const { error } = await supabase.from('messages').insert(supabaseMessage);
+    if (error) {
+      console.error('Supabase Insert Error:', error);
+      return res.status(500).send('Error storing messages.');
+    }
 
+    console.log('Messages stored successfully:', supabaseMessage);
+    res.status(200).send('Messages stored successfully.');
+  } catch (err) {
+    console.error('Error:', err);
+    res.status(500).send('Error processing request.');
+  }
 
         // Log the components of receivedMessages
         console.log("Received Messages: ");
@@ -109,7 +127,13 @@ app.post("/webhook",(req,res)=>{
             console.log('-------------------------');
         });
                 // Emit the received messages to connected clients
-                io.emit('newMessage', receivedMessages);
+//                io.emit('newMessage', receivedMessages);
+  // Broadcast the updated receivedMessages to all connected clients
+  wss.clients.forEach((client) => {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(JSON.stringify(receivedMessages));
+    }
+  });
 
            axios({
             method: 'post',
@@ -132,6 +156,3 @@ app.post("/webhook",(req,res)=>{
         }
     }
 });
-
-  
-    
