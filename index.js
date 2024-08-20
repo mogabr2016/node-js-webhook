@@ -14,6 +14,83 @@ const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 const axios = require('axios');
 
+async function getOrCreateConversationId(conversationId) {
+  try {
+    // Try to find an existing conversation with this contact ID
+    const { data: existingConversation, error: findError } = await supabase
+      .from('conversations')
+      .select('conversation_id')
+      .eq('conversation_id', conversationId)
+      .single();
+
+    if (findError && findError.code !== 'PGRST100') { // Handle error if it's not a 'not found' error
+      console.error('Error finding conversation:', findError);
+      throw new Error('Error finding conversation');
+    }
+
+    // If conversation exists, return its ID
+    if (existingConversation) {
+      return existingConversation.id;
+    }
+
+    // If no conversation exists, create a new one
+    const { data: newConversation, error: insertError } = await supabase
+      .from('conversations')
+      .insert([{ conversation_id: conversationId, updated_at: new Date().toISOString() }])
+      .select('id')
+      .single();
+
+    if (insertError) {
+      console.error('Error creating conversation:', insertError);
+      throw new Error('Error creating conversation');
+    }
+
+    return newConversation.id;
+  } catch (error) {
+    console.error('Error in getOrCreateConversationId:', error);
+  }
+}
+
+// Function to handle a new message
+async function handleNewMessage(contactId, message) {
+  try {
+    // Get or create the conversation ID
+    const conversationId = await getOrCreateConversationId(contactId);
+
+    // Insert the new message
+    const { data: insertedMessage, error: messageError } = await supabase
+      .from('messages2')
+      .insert([
+        {
+          conversation_id: conversationId,
+          sender_id: message.from,
+          text: message.text,
+          timestamp: message.wa_timestamp,
+        }
+      ]);
+
+    if (messageError) {
+      console.error('Error inserting message:', messageError);
+      throw new Error('Error inserting message');
+    }
+
+    // Update the 'updated_at' field in the conversation
+    const { data: updatedConversation, error: conversationError } = await supabase
+      .from('conversations')
+      .update({ updated_at: new Date().toISOString() })
+      .eq('conversation_id', conversationId);
+
+    if (conversationError) {
+      console.error('Error updating conversation:', conversationError);
+      throw new Error('Error updating conversation');
+    }
+
+  } catch (error) {
+    console.error('Error in handleNewMessage:', error);
+  }
+}
+
+
 wss.on('connection', (ws) => {
   console.log('Client connected');
 
@@ -102,7 +179,9 @@ const supabaseMessage = {
   wa_timestamp: timestamp
 }
     receivedMessages.push(msg);
-
+const contactId = message_id;
+          const message = supabaseMessage;
+          await handleNewMessage(contactId,message);
 try {
     const { error } = await supabase.from('messages').insert(supabaseMessage);
     if (error) {
